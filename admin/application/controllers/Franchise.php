@@ -141,7 +141,42 @@ class Franchise extends CI_Controller {
 		$tempid2= '1707175516262586925';
 		$message2="Dear user, your franchise has been successfully registered with Aceaaro India Pvt. Ltd. Welcome aboard! -Aceaaro India Pvt. Ltd.";
 		sendsms($message2, $franchise_details[0]->mobile, $tempid2);
+
+		// ------------------ Send Email ------------------
+		$this->load->library('email');
+
+		$config = array(
+			'protocol'    => 'smtp',
+			'smtp_host'   => 'ssl://smtp.gmail.com',
+			'smtp_port'   => 465,
+			'smtp_user'   => 'aceaaroindia@gmail.com',   // Gmail address
+			'smtp_pass'   => 'sodrkqgkuudfojdz',         // Gmail App Password
+			'mailtype'    => 'html',
+			'charset'     => 'utf-8',
+			'wordwrap'    => TRUE,
+			'newline'     => "\r\n",
+			'crlf'        => "\r\n"
+		);
+
+		$this->email->initialize($config);
+		$this->email->from('aceaaroindia@gmail.com', 'Aceaaro India Pvt. Ltd.');
+		$this->email->to($franchise_details[0]->email); // hardcoded for testing (can change to $result[0]->email later)
+		$this->email->subject('Franchise Register');
+		$this->email->message('
+			<p>Dear '.$franchise_details[0]->name.',</p>
+			<p>Your franchise has been successfully registered with Aceaaro India Pvt. Ltd. Welcome aboard!</p>
+			<p>Thank you,<br>
+			<strong>Aceaaro India Pvt. Ltd.</strong></p>
+		');
+
+		if($this->email->send()) {
+			log_message('info', 'Email sent successfully to '.$result[0]->email);
+		} else {
+			log_message('error', 'Email failed to send to '.$result[0]->email.' Error: '.$this->email->print_debugger(['headers']));
+		}
+
 		
+		// ------------------------------------------------
 
 		// Commission percentages per level
 		$commissionRates = [5, 1, 1];

@@ -116,8 +116,15 @@
                                         class="btn btn-primary text-white mt-1" onclick="clubgenealogy(this);">Club
                                         Autopool Genealogy</a>
 
-                                    <a id="<?= $c['id']?>" class="btn btn-danger text-white mt-1"
-                                        onclick="unblock_block(this,2);">Block</a>
+                                    <!-- <a id="<?= $c['id']?>" class="btn btn-danger text-white mt-1"
+                                        onclick="unblock_block(this,2);">Block</a> -->
+
+                                         <a id="<?= $c['id']?>" 
+   data-customer_id="<?= $c['customer_id']?>" 
+   class="btn btn-danger text-white mt-1"
+   onclick="unblock_block(this,2);">
+   Block
+</a>
 
                                     <?php } else if($page_name=="Blocked Customer") { ?>
                                     <a id="<?= $c['id']?>" class="btn btn-success text-white w-100 mt-1"
@@ -406,7 +413,8 @@ function upgrade(x) {
 function unblock_block(x, s) {
     var d = {
         "cid": x.id,
-        "status": s
+        "status": s,
+        "customer_id": x.dataset.customer_id,
 
     }
 

@@ -13,7 +13,7 @@ function sendsms($message, $mobile_no, $templateId) {
                 <senderid>ACEAWS</senderid>
             </child>
         </parent>';
-    $URL = "https://sms.otechnonix.com/submitsms.jsp?";
+    //$URL = "https://sms.otechnonix.com/submitsms.jsp?";
     $ch = curl_init($URL);
     curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);

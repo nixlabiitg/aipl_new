@@ -466,8 +466,45 @@ class Customer extends CI_Controller {
 		$tempid = '1707175550463375365';
 		$cust_name = $result[0]->name;
 		$cust_phone = $result[0]->mobile;
+		$cust_email = $result[0]->email;
 		$message = 'Dear '.$cust_name.', the commission payment of ₹'.$d['amount'].' has been processed - Aceaaro India Pvt. Ltd.';
 		sendsms($message, $cust_phone, $tempid);
+
+		// ------------------ Send Email ------------------
+		$this->load->library('email');
+
+		$config = array(
+			'protocol'    => 'smtp',
+			'smtp_host'   => 'ssl://smtp.gmail.com',
+			'smtp_port'   => 465,
+			'smtp_user'   => 'aceaaroindia@gmail.com',   // Gmail address
+			'smtp_pass'   => 'sodrkqgkuudfojdz',         // Gmail App Password
+			'mailtype'    => 'html',
+			'charset'     => 'utf-8',
+			'wordwrap'    => TRUE,
+			'newline'     => "\r\n",
+			'crlf'        => "\r\n"
+		);
+
+		$this->email->initialize($config);
+		$this->email->from('aceaaroindia@gmail.com', 'Aceaaro India Pvt. Ltd.');
+		$this->email->to($cust_email);
+		$this->email->subject('Commission Payment Processed');
+		$this->email->message('
+			<p>Dear '.$cust_name.',</p>
+			<p>Your commission payment of ₹'.$d['amount'].' has been successfully processed.</p>
+			<p>Thank you,<br>
+			<strong>Aceaaro India Pvt. Ltd.</strong></p>
+		');
+
+		if($this->email->send()) {
+			log_message('info', 'Email sent successfully to '.$result[0]->email);
+		} else {
+			log_message('error', 'Email failed to send to '.$result[0]->email.' Error: '.$this->email->print_debugger(['headers']));
+		}
+		// ------------------------------------------------
+
+
 
 		if($isMrl == 1){
 			$sql="UPDATE `customer_master` SET `main_wallet`=`main_wallet`-".$d['amount'].", `nominee_benefit` = `nominee_benefit` + '$nominee_benefit'  where `customer_id`='".$d['cid']."'";
@@ -710,6 +747,9 @@ public function activate()
 		$d=$this->input->post();
 		$sql="UPDATE `customer_master` SET `status`='".$d['status']."',`status_update_date`=CURRENT_TIMESTAMP() WHERE `id`='".$d['cid']."'";
 		$this->db->query($sql);
+		// Update user_master
+		$this->db->where('customer_id', $d['customer_id']);
+		$this->db->update('user_master', ['status' => 3]);
 		
 		echo json_encode($this->db->affected_rows(),true);
 	}

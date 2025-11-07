@@ -287,9 +287,46 @@ class Welcome extends CI_Controller
             // SMS
             $customerName = $customer[0]->name;
             $customerPhone = $customer[0]->mobile;
+			$customerEmail = $customer[0]->email;
             $tempid = '1707175516284291361';
             $message = 'Dear '.$customerName.', you have successfully repurchased items worth '.$finalDistPrice.' - Aceaaro India Pvt. Ltd.';
             sendsms($message, $customerPhone, $tempid);
+
+			// ------------------ Send Email ------------------
+					$this->load->library('email');
+
+					$config = array(
+						'protocol'    => 'smtp',
+						'smtp_host'   => 'ssl://smtp.gmail.com',
+						'smtp_port'   => 465,
+						'smtp_user'   => 'aceaaroindia@gmail.com',   // Gmail address
+						'smtp_pass'   => 'sodrkqgkuudfojdz',         // Gmail App Password
+						'mailtype'    => 'html',
+						'charset'     => 'utf-8',
+						'wordwrap'    => TRUE,
+						'newline'     => "\r\n",
+						'crlf'        => "\r\n"
+					);
+
+					$this->email->initialize($config);
+					$this->email->from('aceaaroindia@gmail.com', 'Aceaaro India Pvt. Ltd.');
+					$this->email->to($customerEmail);
+					$this->email->subject('Repurchased');
+					$this->email->message('
+						<p>Dear '.$customerName.',</p>
+						<p>You have successfully repurchased items worth '.$finalDistPrice.'.</p>
+						<p>Thank you,<br>
+						<strong>Aceaaro India Pvt. Ltd.</strong></p>
+					');
+
+					if($this->email->send()) {
+						log_message('info', 'Email sent successfully to '.$result[0]->email);
+					} else {
+						log_message('error', 'Email failed to send to '.$result[0]->email.' Error: '.$this->email->print_debugger(['headers']));
+					}
+
+					// ------------------------------------------------	
+			
 
 			// Check Fasttrack
 			if($finalDistAmt > 2500){
@@ -603,8 +640,9 @@ class Welcome extends CI_Controller
 	}
 
 	public function createAccount(){
-		// if(isset($_POST['create_account'])){
+		//if(isset($_POST['create_account'])){
 			extract($_POST);
+			$this->load->helper('debug');
 
 			// Validate the reCAPTCHA
 			$recaptchaSecret = '6LcBg9grAAAAAHLCoTq-KT9SD8NSeefZCks-WiTk';
@@ -676,6 +714,41 @@ class Welcome extends CI_Controller
                         $message = 'Dear '.$name.', your registration is successful. Your User ID is '.$userid.' and your password is '.$password.'. Please keep them safe - Aceaaro India Pvt. Ltd.';
                         sendsms($message, $phone, $tempid);
 
+						// ------------------ Send Email ------------------
+						$this->load->library('email');
+
+						$config = array(
+							'protocol'    => 'smtp',
+							'smtp_host'   => 'ssl://smtp.gmail.com',
+							'smtp_port'   => 465,
+							'smtp_user'   => 'banajyotidas@gmail.com',   // Gmail address
+							'smtp_pass'   => 'sodrkqgkuudfojdz',         // Gmail App Password
+							'mailtype'    => 'html',
+							'charset'     => 'utf-8',
+							'wordwrap'    => TRUE,
+							'newline'     => "\r\n",
+							'crlf'        => "\r\n"
+						);
+
+						$this->email->initialize($config);
+						$this->email->from('banajyotidas@gmail.com', 'Aceaaro India Pvt. Ltd.');
+						$this->email->to($email);
+						$this->email->subject('Registration');
+						$this->email->message('
+							<p>Dear '.$name.',</p>
+							<p>Your registration is successful. Your User ID is '.$userid.' and your password is '.$password.'.</p>
+							<p>Thank you,<br>
+							<strong>Aceaaro India Pvt. Ltd.</strong></p>
+						');
+
+						if(!$this->email->send()) {
+							log_message('error', "Email failed to send to $email. Error: " . $this->email->print_debugger(['headers']));
+						} else {
+							log_message('info', "Email sent successfully to $email");
+						}
+		
+						// ------------------------------------------------	
+
 						$this->session->set_flashdata("success", "**Congratulations! Your account created successfully. Your ID is <span style='color:red;'>".$userid."</span> and Password is <span style='color:red;'>".$password."</span>. Click here to <u><a href=".base_url('authentication/login').">login now</a></u>");
 						redirect('registration');
 
@@ -688,7 +761,7 @@ class Welcome extends CI_Controller
 				$this->session->set_flashdata("danger", "reCAPTCHA validation failed. Please try again.");
 				redirect('registration');
 			}
-		// } 
+		//} 
 	}
 
 

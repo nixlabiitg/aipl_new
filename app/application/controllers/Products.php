@@ -228,9 +228,44 @@ class Products extends CI_Controller {
 			// SMS
             $customerName = $customer[0]->name;
             $customerPhone = $customer[0]->mobile;
+			$customerEmail = $customer[0]->email;
             $tempid = '1707175516284291361';
             $message = 'Dear '.$customerName.', you have successfully repurchased items worth '.$finalDistPrice.' - Aceaaro India Pvt. Ltd.';
             sendsms($message, $customerPhone, $tempid);
+
+			// ------------------ Send Email ------------------
+			$this->load->library('email');
+
+			$config = array(
+				'protocol'    => 'smtp',
+				'smtp_host'   => 'ssl://smtp.gmail.com',
+				'smtp_port'   => 465,
+				'smtp_user'   => 'aceaaroindia@gmail.com',   // Gmail address
+				'smtp_pass'   => 'sodrkqgkuudfojdz',         // Gmail App Password
+				'mailtype'    => 'html',
+				'charset'     => 'utf-8',
+				'wordwrap'    => TRUE,
+				'newline'     => "\r\n",
+				'crlf'        => "\r\n"
+			);
+
+			$this->email->initialize($config);
+			$this->email->from('aceaaroindia@gmail.com', 'Aceaaro India Pvt. Ltd.');
+			$this->email->to($customerEmail);
+			$this->email->subject('Repurchased');
+			$this->email->message('
+				<p>Dear '.$customerName.',</p>
+				<p>You have successfully repurchased items worth '.$finalDistPrice.'.</p>
+				<p>Thank you,<br>
+				<strong>Aceaaro India Pvt. Ltd.</strong></p>
+			');
+
+			if($this->email->send()) {
+				log_message('info', 'Email sent successfully to '.$result[0]->email);
+			} else {
+				log_message('error', 'Email failed to send to '.$result[0]->email.' Error: '.$this->email->print_debugger(['headers']));
+			}
+			// ------------------------------------------------
 
 			// Check Fasttrack
 			if($finalDistAmt > 2500){

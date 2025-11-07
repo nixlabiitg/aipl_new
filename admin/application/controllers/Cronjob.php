@@ -173,72 +173,154 @@ public function directpointbonus()
     }
 
 
+    // public function club_achieve()
+    // {
+    //     $this->load->helper('debug');
+    //     $sql="SELECT * FROM `customer_master` WHERE `club_id`<3 and status=1";
+     
+    //     $query=$this->db->query($sql);
+    //     $result=$query->result_array();
+    //     foreach($result as $rs)
+    //     {
+    //         $sql="SELECT count(`id`) as cnt FROM customer_master c INNER JOIN package_master p on c.package_id=p.package_id where c.status='1' and p.club_achieve='1' and c.sponsor_id='".$rs['customer_id']."'";
+          
+    //     //   echo $sql;
+    //         $query=$this->db->query($sql);
+    //         $club=$query->result_array();
+    //         if($club[0]['cnt']>=4 && $rs['club_id']==0)
+    //         {
+    //             // green club income
+    //             $sql="UPDATE `customer_master` SET `club_id`='1',`main_wallet`=`main_wallet`+500 WHERE `customer_id`='".$rs['customer_id']."'";
+    //             $this->db->query($sql);
+    //             $sql="INSERT INTO `customer_transaction_master`(`customer_id`, `credit`, `remarks`,`income_type_id`) VALUES ('".$rs['customer_id']."','500','Green Club Bonus','6')";
+    //             $this->db->query($sql);
+    //             //member development bonus
+    //             $this->member_development_bonus($rs['sponsor_id'],250);
+    //         }
+    //         else if($club[0]['cnt']>=7 && $rs['club_id']==1)
+    //         {
+    //             // red club income
+    //             $sql="UPDATE `customer_master` SET `club_id`='2',`main_wallet`=`main_wallet`+1000 WHERE `customer_id`='".$rs['customer_id']."'";
+    //             $this->db->query($sql);
+    //             $sql="INSERT INTO `customer_transaction_master`(`customer_id`, `credit`, `remarks`,`income_type_id`) VALUES ('".$rs['customer_id']."','1000','Red Club Bonus','6')";
+    //             $this->db->query($sql);
+    //              //member development bonus
+    //              $this->member_development_bonus($rs['sponsor_id'],500);
+    //         }
+    //         else if($club[0]['cnt']>=10 && $rs['club_id']==2)
+    //         {
+    //             // yellow club income
+    //             $sql="UPDATE `customer_master` SET `club_id`='3',`main_wallet`=`main_wallet`+1500 WHERE `customer_id`='".$rs['customer_id']."'";
+               
+    //             $this->db->query($sql);
+    //             $sql="INSERT INTO `customer_transaction_master`(`customer_id`, `credit`, `remarks`,`income_type_id`) VALUES ('".$rs['customer_id']."','1500','Yellow Club Bonus','6')";
+              
+    //             $this->db->query($sql);
+               
+    //             //club autopool               
+    //             $this->club_autopool($rs['customer_id']);                
+    //             //direct club
+    //             $this->direct_club($rs['sponsor_id']);
+    //             //Reward & Recognition
+    //             $this->associate_club($rs['sponsor_id']);
+    //             //member development bonus
+    //              $this->member_development_bonus($rs['sponsor_id'],1000);
+    //         }
+
+    //     }
+
+    //     // $sql="SELECT * FROM `customer_master` WHERE `club_id`=3 and status=1";
+       
+    //     // $query=$this->db->query($sql);
+    //     // $result=$query->result_array();
+    //     // foreach($result as $rs)
+    //     // {
+           
+    //     //         $this->direct_club($rs['customer_id']);
+             
+    //     // }
+    // }
+
+
     public function club_achieve()
     {
-        $sql="SELECT * FROM `customer_master` WHERE `club_id`<3 and status=1";
-     
+        $this->load->helper('debug');
+        $sql = "SELECT c.*, p.package_id 
+            FROM customer_master c 
+            LEFT JOIN package_master p ON c.package_id = p.package_id
+            WHERE c.club_id < 3 AND c.status = 1";
+    
         $query=$this->db->query($sql);
         $result=$query->result_array();
         foreach($result as $rs)
         {
             $sql="SELECT count(`id`) as cnt FROM customer_master c INNER JOIN package_master p on c.package_id=p.package_id where c.status='1' and p.club_achieve='1' and c.sponsor_id='".$rs['customer_id']."'";
-          
-        //   echo $sql;
+        
             $query=$this->db->query($sql);
             $club=$query->result_array();
-            if($club[0]['cnt']>=4 && $rs['club_id']==0)
+    
+            // --------- Green Club Income ----------
+            if($club[0]['cnt']>=4 && $rs['c.club_id']==0)
             {
-                // green club income
-                $sql="UPDATE `customer_master` SET `club_id`='1',`main_wallet`=`main_wallet`+500 WHERE `customer_id`='".$rs['customer_id']."'";
+                $sql="UPDATE `customer_master` 
+                    SET `club_id`='1',
+                        `main_wallet`=`main_wallet`+500";
+
+                // Add point_wallet bonus based on package_id
+                $package_id = (int) trim($rs['package_id']);
+                if ($package_id === 17 || $package_id === 25) {
+                    $sql .= ", `point_wallet` = `point_wallet` + 5";
+                } elseif ($package_id === 27) {
+                    $sql .= ", `point_wallet` = `point_wallet` + 10";
+                }
+
+                $sql .= " WHERE `customer_id`='".$rs['customer_id']."'";
                 $this->db->query($sql);
-                $sql="INSERT INTO `customer_transaction_master`(`customer_id`, `credit`, `remarks`,`income_type_id`) VALUES ('".$rs['customer_id']."','500','Green Club Bonus','6')";
+
+                $sql="INSERT INTO `customer_transaction_master`(`customer_id`, `credit`, `remarks`,`income_type_id`) 
+                    VALUES ('".$rs['customer_id']."','500','Green Club Bonus','6')";
                 $this->db->query($sql);
-                //member development bonus
+
                 $this->member_development_bonus($rs['sponsor_id'],250);
             }
+            // --------- Red Club Income ----------
             else if($club[0]['cnt']>=7 && $rs['club_id']==1)
             {
-                // red club income
-                $sql="UPDATE `customer_master` SET `club_id`='2',`main_wallet`=`main_wallet`+1000 WHERE `customer_id`='".$rs['customer_id']."'";
+                $sql="UPDATE `customer_master` 
+                    SET `club_id`='2',
+                        `main_wallet`=`main_wallet`+1000,
+                        `point_wallet` = `point_wallet` + 35
+                    WHERE `customer_id`='".$rs['customer_id']."'";
                 $this->db->query($sql);
-                $sql="INSERT INTO `customer_transaction_master`(`customer_id`, `credit`, `remarks`,`income_type_id`) VALUES ('".$rs['customer_id']."','1000','Red Club Bonus','6')";
+
+                $sql="INSERT INTO `customer_transaction_master`(`customer_id`, `credit`, `remarks`,`income_type_id`) 
+                    VALUES ('".$rs['customer_id']."','1000','Red Club Bonus','6')";
                 $this->db->query($sql);
-                 //member development bonus
-                 $this->member_development_bonus($rs['sponsor_id'],500);
+
+                $this->member_development_bonus($rs['sponsor_id'],500);
             }
+            // --------- Yellow Club Income ----------
             else if($club[0]['cnt']>=10 && $rs['club_id']==2)
             {
-                // yellow club income
-                $sql="UPDATE `customer_master` SET `club_id`='3',`main_wallet`=`main_wallet`+1500 WHERE `customer_id`='".$rs['customer_id']."'";
-               
+                $sql="UPDATE `customer_master` 
+                    SET `club_id`='3',
+                        `main_wallet`=`main_wallet`+1500,
+                        `point_wallet` = `point_wallet` + 50
+                    WHERE `customer_id`='".$rs['customer_id']."'";
                 $this->db->query($sql);
-                $sql="INSERT INTO `customer_transaction_master`(`customer_id`, `credit`, `remarks`,`income_type_id`) VALUES ('".$rs['customer_id']."','1500','Yellow Club Bonus','6')";
-              
+
+                $sql="INSERT INTO `customer_transaction_master`(`customer_id`, `credit`, `remarks`,`income_type_id`) 
+                    VALUES ('".$rs['customer_id']."','1500','Yellow Club Bonus','6')";
                 $this->db->query($sql);
-               
-                //club autopool               
+
                 $this->club_autopool($rs['customer_id']);                
-                //direct club
                 $this->direct_club($rs['sponsor_id']);
-                //Reward & Recognition
                 $this->associate_club($rs['sponsor_id']);
-                //member development bonus
-                 $this->member_development_bonus($rs['sponsor_id'],1000);
+                $this->member_development_bonus($rs['sponsor_id'],1000);
             }
-
         }
-
-        // $sql="SELECT * FROM `customer_master` WHERE `club_id`=3 and status=1";
-       
-        // $query=$this->db->query($sql);
-        // $result=$query->result_array();
-        // foreach($result as $rs)
-        // {
-           
-        //         $this->direct_club($rs['customer_id']);
-             
-        // }
     }
+
 
     // club autopool 
 	public function club_autopool($custid)

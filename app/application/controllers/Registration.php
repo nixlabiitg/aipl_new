@@ -47,8 +47,10 @@ class Registration extends CI_Controller {
 
 	public function createAccount(){
 		if(isset($_POST['create_account'])){
+
+			$this->load->helper('debug');
 			extract($_POST);
-			
+	
 			$ifExist = $this->Crud->ciCount("user_master", "`user_email` = '$email' OR `user_phone` = '$phone'" );
 
 			if($ifExist > 0){
@@ -88,6 +90,42 @@ class Registration extends CI_Controller {
 					$tempid = '1707175516215519152';
 					$message = 'Dear '.$name.', your registration is successful. Your User ID is '.$userid.' and your password is '.$password.'. Please keep them safe - Aceaaro India Pvt. Ltd.';
 					sendsms($message, $phone, $tempid);
+					
+					// ------------------ Send Email ------------------
+					$this->load->library('email');
+					
+					$config = array(
+						'protocol'    => 'smtp',
+						'smtp_host'   => 'ssl://smtp.gmail.com',
+						'smtp_port'   => 465,
+						'smtp_user'   => 'aceaaroindia@gmail.com',   // Gmail address
+						//'smtp_user'   => 'banajyotidas@gmail.com',
+						'smtp_pass'   => 'sodrkqgkuudfojdz',         // Gmail App Password
+						'charset'     => 'utf-8',
+						'wordwrap'    => TRUE,
+						'newline'     => "\r\n",
+						'crlf'        => "\r\n"
+					);
+
+					$this->email->initialize($config);
+					$this->email->from('banajyotidas@gmail.com', 'Aceaaro India Pvt. Ltd.');
+					$this->email->to($email);
+					$this->email->subject('Registration');
+					$this->email->message('
+						<p>Dear '.$name.',</p>
+						<p>Your Registration is successful. Your User ID is '.$userid.' and your password is '.$password.'. Please keep them safe</p>
+						<p>Your Login ID: <strong>'.$userid.'</strong><br>
+						Password: <strong>'.$password.'</strong></p>
+						<p>Welcome aboard!<br><strong>- Aceaaro India Pvt. Ltd.</strong></p>
+					');
+
+					if(!$this->email->send()) {
+							log_message('error', "Email failed to send to $email. Error: " . $this->email->print_debugger(['headers']));
+						} else {
+							log_message('info', "Email sent successfully to $email");
+						}
+
+					// ------------------------------------------------
 
 					$this->session->set_flashdata("success", "**Congratulations! Your account created successfully. Your ID is <span style='color:red;'>".$userid."</span> and Password is <span style='color:red;'>".$password."</span>.");
 					redirect('Authentication/login');
