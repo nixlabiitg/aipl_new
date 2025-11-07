@@ -98,7 +98,7 @@ class Registration extends CI_Controller {
 						'protocol'    => 'smtp',
 						'smtp_host'   => 'ssl://smtp.gmail.com',
 						'smtp_port'   => 465,
-						'smtp_user'   => 'aceaaroindia@gmail.com',   // Gmail address
+						'smtp_user'   => 'no-reply@aceaaro.in',   // Gmail address
 						//'smtp_user'   => 'banajyotidas@gmail.com',
 						'smtp_pass'   => 'sodrkqgkuudfojdz',         // Gmail App Password
 						'charset'     => 'utf-8',
@@ -108,7 +108,7 @@ class Registration extends CI_Controller {
 					);
 
 					$this->email->initialize($config);
-					$this->email->from('banajyotidas@gmail.com', 'Aceaaro India Pvt. Ltd.');
+					$this->email->from('no-reply@aceaaro.in', 'Aceaaro India Pvt. Ltd.');
 					$this->email->to($email);
 					$this->email->subject('Registration');
 					$this->email->message('

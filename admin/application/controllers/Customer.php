@@ -477,7 +477,7 @@ class Customer extends CI_Controller {
 			'protocol'    => 'smtp',
 			'smtp_host'   => 'ssl://smtp.gmail.com',
 			'smtp_port'   => 465,
-			'smtp_user'   => 'aceaaroindia@gmail.com',   // Gmail address
+			'smtp_user'   => 'no-reply@aceaaro.in',   // Gmail address
 			'smtp_pass'   => 'sodrkqgkuudfojdz',         // Gmail App Password
 			'mailtype'    => 'html',
 			'charset'     => 'utf-8',
@@ -487,7 +487,7 @@ class Customer extends CI_Controller {
 		);
 
 		$this->email->initialize($config);
-		$this->email->from('aceaaroindia@gmail.com', 'Aceaaro India Pvt. Ltd.');
+		$this->email->from('no-reply@aceaaro.in', 'Aceaaro India Pvt. Ltd.');
 		$this->email->to($cust_email);
 		$this->email->subject('Commission Payment Processed');
 		$this->email->message('
