@@ -744,14 +744,49 @@ public function activate()
 
 	public function changestatus()
 	{
-		$d=$this->input->post();
+		/*$d=$this->input->post();
 		$sql="UPDATE `customer_master` SET `status`='".$d['status']."',`status_update_date`=CURRENT_TIMESTAMP() WHERE `id`='".$d['cid']."'";
 		$this->db->query($sql);
 		// Update user_master
 		$this->db->where('customer_id', $d['customer_id']);
 		$this->db->update('user_master', ['status' => 3]);
 		
-		echo json_encode($this->db->affected_rows(),true);
+		echo json_encode($this->db->affected_rows(),true);*/
+		// updated code
+		$d = $this->input->post();
+    $cid = $d['cid'];
+    $newStatus = $d['status'];
+
+    // 1️⃣ Always get the customer_id from DB if not provided
+    $customer = $this->db->select('id, customer_id')
+                         ->where('id', $cid)
+                         ->get('customer_master')
+                         ->row();
+
+    if (!$customer) {
+        echo json_encode(['success' => false, 'message' => 'Customer not found.']);
+        return;
+    }
+
+    $customerId = !empty($d['customer_id']) ? $d['customer_id'] : $customer->customer_id;
+
+    // 2️⃣ Update customer_master
+    $this->db->query("
+        UPDATE customer_master 
+        SET status = ?, status_update_date = CURRENT_TIMESTAMP() 
+        WHERE id = ?
+    ", [$newStatus, $cid]);
+
+    // 3️⃣ Update user_master (make sure customer_id matches the one in DB)
+    $this->db->where('customer_id', $customerId);
+    $this->db->update('user_master', ['status' => $newStatus]);
+
+    // 4️⃣ Return JSON response
+    echo json_encode([
+        'success' => true,
+        'message' => ($newStatus == 2 ? 'Customer Blocked Successfully' : 'Customer Unblocked Successfully'),
+        'affected_rows' => $this->db->affected_rows()
+    ]);
 	}
 
 	public function rejectcust()

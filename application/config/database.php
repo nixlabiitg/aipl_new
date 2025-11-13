@@ -77,7 +77,7 @@ $db['default'] = array(
 	'dsn'	=> '',
 	'hostname' => 'localhost',
 	'username' => $_SERVER['HTTP_HOST'] == 'localhost' ? 'root' : 'u441502015_aipl',
-	'password' => $_SERVER['HTTP_HOST'] == 'localhost' ? 'Otechnix@123' : 'Otechnix@123#',
+	'password' => $_SERVER['HTTP_HOST'] == 'localhost' ? '' : '',
 	'database' => $_SERVER['HTTP_HOST'] == 'localhost' ? 'aipl' : 'u441502015_aipl',
 	'dbdriver' => 'mysqli',
 	'dbprefix' => '',

@@ -411,7 +411,7 @@ function upgrade(x) {
 }
 
 function unblock_block(x, s) {
-    var d = {
+    /*var d = {
         "cid": x.id,
         "status": s,
         "customer_id": x.dataset.customer_id,
@@ -432,7 +432,30 @@ function unblock_block(x, s) {
         error: function(data) {
 
         }
-    })
+    })*/
+    var d = {
+        "cid": x.id,
+        "status": s,
+        "customer_id": x.dataset.customer_id
+    };
+
+    $.ajax({
+        url: "<?= base_url('customer/changestatus') ?>",
+        type: "POST",
+        dataType: "json",
+        data: d,
+        success: function (res) {
+            if (res.success) {
+                alert(res.message);
+                window.location.reload();
+            } else {
+                alert("Something went wrong!");
+            }
+        },
+        error: function (xhr, status, error) {
+            console.log("AJAX Error:", error);
+        }
+    });
 
 }
 
