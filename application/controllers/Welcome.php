@@ -717,36 +717,65 @@ class Welcome extends CI_Controller
 						// ------------------ Send Email ------------------
 						$this->load->library('email');
 
-						$config = array(
-							'protocol'    => 'smtp',
-							'smtp_host'   => 'ssl://smtp.gmail.com',
-							'smtp_port'   => 465,
-							'smtp_user'   => 'no-reply@aceaaro.in',   // Gmail address
-							'smtp_pass'   => 'sodrkqgkuudfojdz',         // Gmail App Password
-							'mailtype'    => 'html',
-							'charset'     => 'utf-8',
-							'wordwrap'    => TRUE,
-							'newline'     => "\r\n",
-							'crlf'        => "\r\n"
-						);
+    // -------------------- SMTP CONFIG --------------------
+    $config = array(
+        'protocol'     => 'smtp',
+        'smtp_host'    => 'smtp.hostinger.com',
+        'smtp_port'    => 465,
+        'smtp_user'    => 'no-reply@aceaaro.in',
+        'smtp_pass'    => 'Aipl@2025#',  // your actual password
+        'smtp_crypto'  => 'ssl',
+        'mailtype'     => 'html',
+        'charset'      => 'utf-8',
+        'wordwrap'     => TRUE,
+        'newline'      => "\r\n",
+        'crlf'         => "\r\n",
+        'smtp_timeout' => 30,
+        'validate'     => TRUE
+    );
 
-						$this->email->initialize($config);
-						$this->email->from('no-reply@aceaaro.in', 'Aceaaro India Pvt. Ltd.');
-						$this->email->to($email);
-						$this->email->subject('Registration');
-						$this->email->message('
-							<p>Dear '.$name.',</p>
-							<p>Your registration is successful. Your User ID is '.$userid.' and your password is '.$password.'.</p>
-							<p>Thank you,<br>
-							<strong>Aceaws India Pvt. Ltd.</strong></p>
-						');
+    $this->email->initialize($config);
 
-						if(!$this->email->send()) {
-							log_message('error', "Email failed to send to $email. Error: " . $this->email->print_debugger(['headers']));
-						} else {
-							log_message('info', "Email sent successfully to $email");
-						}
-		
+    // -------------------- EMAIL CONTENT --------------------
+    $this->email->from('no-reply@aceaaro.in', 'Aceaaro India Pvt. Ltd.');
+    $this->email->to($email);
+    $this->email->subject('Registration');
+    $this->email->message('
+        <p>Dear '.$name.',</p>
+        <p>Your registration is successful. Your User ID is '.$userid.' and your password is '.$password.'.</p>
+        <p>Thank you,<br><strong>Aceaaro India Pvt. Ltd.</strong></p>
+    ');
+
+    // -------------------- SEND + RETURN JSON --------------------
+    /*if (!$this->email->send()) {
+
+        $debug = $this->email->print_debugger(['headers', 'subject', 'body']);
+
+        $response = array(
+            'status' => 'error',
+            'debug'  => $debug
+        );
+
+        header('Content-Type: application/json');
+        echo json_encode($response);
+        exit;
+
+    } else {
+
+        $response = array(
+            'status'  => 'success',
+            'message' => 'Email sent successfully'
+        );
+
+        header('Content-Type: application/json');
+        echo json_encode($response);
+        exit;
+    }*/
+		$this->email->send();
+
+    // (optional) You can add log:
+    log_message('info', "Email sent to: $email");
+						
 						// ------------------------------------------------	
 
 						$this->session->set_flashdata("success", "**Congratulations! Your account created successfully. Your ID is <span style='color:red;'>".$userid."</span> and Password is <span style='color:red;'>".$password."</span>. Click here to <u><a href=".base_url('authentication/login').">login now</a></u>");

@@ -55,7 +55,7 @@
 
                 <ul class="active">
                     <?php 
-                  function customerTree($customerId)
+                  /*function customerTree($customerId)
                   {
                      $k=0;
                       $c = &get_instance();
@@ -99,7 +99,57 @@
                       
                      
                       return $uc."</ul>";
-                  }
+                  }*/
+
+                  function customerTree($customerId)
+{
+    $c = &get_instance();
+    $uc = '<ul>';
+
+    $sql = "SELECT * FROM customer_master WHERE sponsor_id = ?";
+    $query = $c->db->query($sql, [$customerId]);
+    $result = $query->result_array();
+
+    if (empty($result)) {
+        return '';
+    }
+
+    foreach ($result as $rs) {
+
+        // fetch package color
+        $sql2 = "SELECT color_code FROM package_master WHERE package_id = ?";
+        $q2 = $c->db->query($sql2, [$rs['package_id']]);
+        $package = $q2->row_array();
+        $colour = $package['color_code'];
+
+        $uc .= '<li>
+                <a href="javascript:void(0);">
+                    <div class="member-view-box">
+                        <div class="member-image" style="margin-left:auto;margin-right:auto;">
+                            <img src="'.base_url("/uploads/profile/".($rs['profile_pic']==1?$rs['customer_id']:"images").".png").'" 
+                                style="border-radius:50%">
+                        </div>
+                        <div class="member-details text-center"
+                             style="background-color:'.($colour?$colour:'black').';
+                                    padding:5px;border-radius:5px;color:#fff;">
+                            '.$rs['name'].'<br>
+                            '.$rs['customer_id'].'<br>
+                            <span class="badge badge-'.($rs['status']==1?"success":"warning").'">
+                                '.($rs['status']==1?"Active":"Pending").'
+                            </span>
+                        </div>
+                    </div>
+                </a>';
+
+        // recursive
+        $uc .= customerTree($rs['customer_id']);
+
+        $uc .= '</li>';
+    }
+
+    return $uc.'</ul>';
+}
+
                 
                 foreach($tree as $t)
                 {

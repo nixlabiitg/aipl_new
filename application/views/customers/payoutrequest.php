@@ -70,7 +70,7 @@
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 <script>
-tax_calculation = function(x) {
+/*tax_calculation = function(x) {
 
     var amt = Number(x.value);
     var tds = amt * 5 / 100;
@@ -111,7 +111,7 @@ send_request = function() {
         "remarks": $("#remarks").val()
     }
     $.ajax({
-        url: "<?=base_url("Customer/send_request")?>",
+        url: "<//?=base_url("Customer/send_request")?>",
         type: "POST",
         dataType: "TEXT",
         data: d,
@@ -134,5 +134,87 @@ send_request = function() {
         }
 
     })
+}*/
+</script>
+<script>
+tax_calculation = function(x) {
+
+    var amt = Number(x.value);
+    var tds = amt * 5 / 100;
+    var adc = amt * 10 / 100;
+    var net = amt - tds - adc;
+
+    $("#tds").val(tds.toFixed(2));
+    $("#admincharge").val(adc.toFixed(2));
+    $("#net").val(net.toFixed(2));
+}
+
+send_request = function() {
+
+    var amount = Number($("#amount").val());
+    var wallet = Number($("#wallet").val());
+    var minimum_balance = 500;
+    var max_withdrawable = wallet - minimum_balance;
+
+    // 1️⃣ Request amount must be >= 500
+    if (amount < 500) {
+        alert("Request amount should be at least ₹500.");
+        return;
+    }
+
+    // 2️⃣ Wallet must be >= 500 to allow any withdrawal
+    if (wallet < minimum_balance) {
+        alert("You must have at least ₹500 in your wallet to request withdrawal.");
+        return;
+    }
+
+    // 3️⃣ Withdrawal limit check (User must keep ₹500 minimum)
+    if (amount > max_withdrawable) {
+        alert("You can withdraw a maximum of ₹" + max_withdrawable + 
+              ". You must keep ₹500 balance in your wallet.");
+        return;
+    }
+
+    // 4️⃣ No negative or zero amount
+    if (amount <= 0) {
+        alert("Invalid amount.");
+        return;
+    }
+
+    // Disable button
+    $('#req-btn').prop('disabled', true);
+
+    var d = {
+        "amount": amount,
+        "tds": $("#tds").val(),
+        "admincharge": $("#admincharge").val(),
+        "remarks": $("#remarks").val()
+    };
+
+    $.ajax({
+        url: "<?=base_url('Customer/send_request')?>",
+        type: "POST",
+        dataType: "TEXT",
+        data: d,
+        success: function(data) {
+
+            if(data == "f"){
+                alert("Repurchase amount is below ₹1000 for this month, so you cannot send a payout request.");
+                $('#req-btn').prop('disabled', false);
+            }
+            else if (data == "d") {
+                alert("You already have a pending request. Please wait for admin action.");
+                $('#req-btn').prop('disabled', false);
+            }
+            else {
+                alert("Request Sent Successfully");
+                window.location.reload();
+            }
+        },
+        error: function(data) {
+            $('#req-btn').prop('disabled', false);
+            alert(data);
+        }
+    });
 }
 </script>
