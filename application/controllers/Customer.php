@@ -419,7 +419,8 @@ public function upgradation()
 
 public function transferamount()
 	{
-		$d=$this->input->post();
+		
+		/*$d=$this->input->post();
 
 		$userId=$this->session->userdata('aiplUserId');	
 
@@ -439,7 +440,50 @@ public function transferamount()
 			$sql="UPDATE `customer_master` SET `activation_wallet`=`activation_wallet`+".$d['amount'].",activation_wallet_calculation_amount=activation_wallet_calculation_amount+".$d['amount'].",interest_cal_start_date=CURRENT_TIMESTAMP(),interest_calc_end_date=DATE_ADD(CURRENT_TIMESTAMP(),INTERVAL 30 DAY) where `customer_id`='".$d['cid']."'";
 			$this->db->query($sql);
 			echo $this->db->affected_rows();
-		}
+		}*/
+		$d = $this->input->post();
+    $userId = $this->session->userdata('aiplUserId');
+
+    // Get wallet values
+    $sql = "SELECT activation_wallet, activation_wallet_calculation_amount 
+            FROM customer_master 
+            WHERE customer_id = '".$userId."'";
+    $query = $this->db->query($sql);
+    $row = $query->row_array();
+
+    $total_wallet = $row['activation_wallet'];  // original + interest
+    $original_wallet = $row['activation_wallet_calculation_amount']; // original only
+
+    // USER CAN TRANSFER ONLY ORIGINAL WALLET
+    if ($original_wallet < $d['amount']) {
+        echo "no-original-balance";
+        return;
+    }
+
+    // Perform transfer FROM original only
+    $this->db->query("
+        INSERT INTO activation_wallet_recharge_details
+        (customer_id, amount, transfer_by, status)
+        VALUES ('".$d['cid']."', '".$d['amount']."', '".$userId."', '3')
+    ");
+
+    // Deduct ONLY original amount
+    $this->db->query("
+        UPDATE customer_master 
+        SET activation_wallet = activation_wallet - ".$d['amount'].",
+            activation_wallet_calculation_amount = activation_wallet_calculation_amount - ".$d['amount']."
+        WHERE customer_id = '".$userId."'
+    ");
+
+    // Add to receiver
+    $this->db->query("
+        UPDATE customer_master 
+        SET activation_wallet = activation_wallet + ".$d['amount'].",
+            activation_wallet_calculation_amount = activation_wallet_calculation_amount + ".$d['amount']."
+        WHERE customer_id = '".$d['cid']."'
+    ");
+
+    echo "success";
 	
 	}
 

@@ -137,7 +137,7 @@ send_request = function() {
 }*/
 </script>
 <script>
-tax_calculation = function(x) {
+/*tax_calculation = function(x) {
 
     var amt = Number(x.value);
     var tds = amt * 5 / 100;
@@ -192,7 +192,7 @@ send_request = function() {
     };
 
     $.ajax({
-        url: "<?=base_url('Customer/send_request')?>",
+        url: "<//?=base_url('Customer/send_request')?>",
         type: "POST",
         dataType: "TEXT",
         data: d,
@@ -216,5 +216,93 @@ send_request = function() {
             alert(data);
         }
     });
+}*/
+</script>
+<script>
+tax_calculation = function(x) {
+    var amt = Number(x.value);
+    var tds = amt * 5 / 100;
+    var adc = amt * 10 / 100;
+    var net = amt - tds - adc;
+
+    $("#tds").val(tds.toFixed(2));
+    $("#admincharge").val(adc.toFixed(2));
+    $("#net").val(net.toFixed(2));
+}
+
+send_request = function() {
+
+    // Basic validations
+    if (Number($("#amount").val()) < 500) {
+        alert("Request amount should be greater than 500");
+        return;
+    }
+
+    if (Number($("#wallet").val()) < 500) {
+        alert("Minimum wallet value should be ₹500 to send payout request");
+        return;
+    }
+
+    if (Number($("#wallet").val()) < Number($("#amount").val())) {
+        alert("No sufficient amount in wallet. Please check the amount.");
+        return;
+    }
+
+    if (Number($("#amount").val()) <= 0) {
+        return;
+    }
+
+    // Disable button & show loading status
+    $('#req-btn').prop('disabled', true).html("Processing... ⏳");
+
+    // Detect slow network
+    let slowNetworkTimer = setTimeout(function() {
+        alert("Your internet seems slow. Request is still processing, please don't click again.");
+    }, 3000); // 3 seconds timeout for slow network
+
+    var d = {
+        "amount": $("#amount").val(),
+        "tds": $("#tds").val(),
+        "admincharge": $("#admincharge").val(),
+        "remarks": $("#remarks").val()
+    }
+
+    $.ajax({
+        url: "<?=base_url("Customer/send_request")?>",
+        type: "POST",
+        dataType: "TEXT",
+        data: d,
+        timeout: 15000, // 15 sec hard timeout to avoid infinite wait
+
+        success: function(data) {
+            clearTimeout(slowNetworkTimer);
+
+            if (data == "f") {
+                alert("Repurchase amount is below ₹1000 for this month, so you cannot send a payout request.");
+                $('#req-btn').prop('disabled', false).html("Send Request");
+            } 
+            else if (data == "d") {
+                alert("Already have a pending request. Please wait for admin's action.");
+                $('#req-btn').prop('disabled', false).html("Send Request");
+            } 
+            else {
+                alert("Request Sent Successfully");
+                window.location.reload();
+            }
+        },
+
+        error: function(xhr, status) {
+            clearTimeout(slowNetworkTimer);
+
+            $('#req-btn').prop('disabled', false).html("Send Request");
+
+            if (status === "timeout") {
+                alert("Network timeout! Your internet is very slow. Please try again.");
+            } else {
+                alert("Something went wrong! Please check your internet and try again.");
+            }
+        }
+    });
 }
 </script>
+

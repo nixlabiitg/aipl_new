@@ -630,6 +630,12 @@ $gift=$query->result_array()[0]['cnt'];
                                 href="<?= base_url('report/income_statement'); ?>" class="kt-menu__link "><i
                                     class="kt-menu__link-bullet kt-menu__link-bullet--dot"><span></span></i><span
                                     class="kt-menu__link-text">Income Statement</span></a></li>
+                        <li class="kt-menu__item" aria-haspopup="true">
+    <a href="<?=base_url('report/franchise_income_statement')?>" class="kt-menu__link">
+        <i class="kt-menu__link-icon flaticon2-list-3"></i>
+        <span class="kt-menu__link-text">Franchise Income Statement</span>
+    </a>
+</li>
                         <li class="kt-menu__item " aria-haspopup="true"><a
                                 href="<?= base_url('report/activationreport'); ?>" class="kt-menu__link "><i
                                     class="kt-menu__link-bullet kt-menu__link-bullet--dot"><span></span></i><span
@@ -837,6 +843,31 @@ $gift=$query->result_array()[0]['cnt'];
                         </span></span><span class="kt-menu__link-text text-light">Visiting Card</span></a>
 
             </li>
+
+            <!-- ************************************************************* -->
+            <!-- *******************Franchise Dashboard*********************** -->
+            <!-- ************************************************************* -->
+
+            <li class="kt-menu__item">
+            <a href="<?=base_url('franchise/dashboard')?>" class="kt-menu__link">
+                <span class="kt-menu__link-text">Franchise Dashboard</span>
+            </a>
+             </li>
+
+            <li class="kt-menu__item kt-menu__item--submenu">
+                <a href="#" class="kt-menu__link kt-menu__toggle">
+                    <span class="kt-menu__link-text">Franchise Reports</span>
+                </a>
+                <div class="kt-menu__submenu">
+                    <ul class="kt-menu__subnav">
+                        <li><a href="<?=base_url('report/sponsor_income_statement')?>">Sponsor Income</a></li>
+                        <li><a href="<?=base_url('report/income_statement')?>">Income Statement</a></li>
+                        <li><a href="<?=base_url('report/incentive_income_statement')?>">Incentive Income</a></li>
+                        <li><a href="<?=base_url('report/qr_benefit_income_statement')?>">QR Benefit</a></li>
+                    </ul>
+                </div>
+            </li>
+
 
 
 

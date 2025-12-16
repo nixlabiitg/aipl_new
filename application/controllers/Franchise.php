@@ -5,11 +5,59 @@ class Franchise extends CI_Controller {
 	public function __construct() {
 		error_reporting(0);
 		parent::__construct();
-		$this->load->library('form_validation');
-		if (!$this->session->userdata('aiplUserId')) {
-			redirect('authentication/login');
-		}
+        $this->load->database(); // IMPORTANT
+        $this->load->model('Franchise_model');
 	}
+
+	// --------------------------
+    // Franchise Dashboard
+    // --------------------------
+    public function index(){
+       // $userId = $this->session->userdata('aiplUserId');
+
+        //$data['SPONSOR_INCOME']   = $this->Franchise_model->total_sponsor_income($userId);
+        //$data['REMUNERATION']     = $this->Franchise_model->total_remuneration($userId);
+       // $data['INCENTIVE']        = $this->Franchise_model->total_incentive($userId);
+        //$data['QR_BENEFIT']       = $this->Franchise_model->total_qr_benefit($userId);
+
+        $this->load->view('user/layouts/header');
+        $this->load->view('user/layouts/nav');
+        $this->load->view('franchise/dashboard');
+        $this->load->view('user/layouts/footer');
+    }
+
+	// --------------------------
+    // Sponsor Income (Level 1-3)
+    // --------------------------
+    public function sponsor_income(){
+        $userId = $this->session->userdata('aiplUserId');
+        $data['income_list'] = $this->Franchise_model->get_sponsor_income($userId);
+
+        $this->load->view('user/layouts/header');
+        $this->load->view('user/layouts/nav');
+        $this->load->view('franchise/sponsor_income', $data);
+        $this->load->view('user/layouts/footer');
+    }
+
+	// --------------------------
+    // Franchise Income Statement
+    // --------------------------
+    public function income_statement(){
+        $userId = $this->session->userdata('aiplUserId');
+
+        $from = $this->input->post('from') ?: date("Y-m-01");
+        $to   = $this->input->post('to') ?: date("Y-m-d");
+
+        $data['income_list'] = $this->Franchise_model->get_income_statement($userId, $from, $to);
+
+        $data['from'] = $from;
+        $data['to'] = $to;
+
+        $this->load->view('user/layouts/header');
+        $this->load->view('user/layouts/nav');
+        $this->load->view('franchise/income_statement', $data);
+        $this->load->view('user/layouts/footer');
+    }
 
 	public function franchise_list(){
 		$page_name="Franchise List";

@@ -29,6 +29,242 @@ class Report extends CI_Controller {
 		$this->load->view('user/layouts/footer');
     }
 
+	
+
+public function franchise_income_statement()
+{
+	
+	//$userId = $this->session->userdata('aiplUserId');
+	//echo $userId;
+//exit;
+
+    $userId = $this->session->userdata('aiplUserId');   // AI24ZX3876
+    $userId = strtoupper($userId);
+
+    $from = $this->input->post('from') ?: date("Y-m-01");
+    $to   = $this->input->post('to')   ?: date("Y-m-d");
+
+    // Pagination
+    $this->load->library('pagination');
+    $config['base_url'] = base_url('report/franchise_income_statement');
+    $config['per_page'] = 20;
+    $page = ($this->uri->segment(3)) ?: 0;
+
+    // Count total rows
+    $count_sql = "
+        SELECT COUNT(*) AS total
+        FROM customer_transaction_master
+        WHERE income_type_id = 33
+        AND UPPER(customer_id) = '$userId'
+        AND vc_date BETWEEN '{$from} 00:00:00' AND '{$to} 23:59:59'
+    ";
+    $totalRows = $this->db->query($count_sql)->row()->total;
+
+    $config['total_rows'] = $totalRows;
+    $this->pagination->initialize($config);
+
+    // GET RECORDS
+    $sql = "
+    SELECT 
+        ct.credit,
+        ct.vc_date,
+        it.income_name,
+        CASE 
+            WHEN ct.remarks LIKE 'Level %' 
+            THEN SUBSTRING(ct.remarks, 7, 1)
+            ELSE NULL
+        END AS level_no,
+        TRIM(SUBSTRING_INDEX(ct.remarks, ' ', -1)) AS franchise_id,
+        u.name AS member_name,
+        u.mobile AS member_mobile
+    FROM customer_transaction_master ct
+    JOIN income_type_master it ON it.income_type_id = ct.income_type_id
+    LEFT JOIN customer_master u 
+        ON u.franchise_id = TRIM(SUBSTRING_INDEX(ct.remarks, ' ', -1))
+    WHERE ct.income_type_id = 33
+    AND UPPER(ct.customer_id) = '$userId'
+    AND ct.vc_date BETWEEN '{$from} 00:00:00' AND '{$to} 23:59:59'
+    ORDER BY ct.id DESC
+    LIMIT {$config['per_page']} OFFSET {$page}
+";
+
+
+    $data['income_list'] = $this->db->query($sql)->result_array();
+    $data['pagination'] = $this->pagination->create_links();
+    $data['from'] = $from;
+    $data['to'] = $to;
+
+
+    // Load UI
+    $this->load->view('user/layouts/header');
+    $this->load->view('user/layouts/bar');
+    $this->load->view('user/layouts/sub-header');
+    $this->load->view('user/layouts/nav');
+    $this->load->view('report/franchise_income_statement', $data);
+    $this->load->view('user/layouts/footer');
+}
+
+public function sponsor_income_statement()
+{
+    $userId = strtoupper($this->session->userdata('aiplUserId'));
+
+    $from = $this->input->post('from') ?: date("Y-m-01");
+    $to   = $this->input->post('to')   ?: date("Y-m-d");
+
+    // Pagination
+    $this->load->library('pagination');
+    $config['base_url'] = base_url('report/sponsor_income');
+    $config['per_page'] = 20;
+    $page = ($this->uri->segment(3)) ?: 0;
+
+    // Count
+    $count_sql = "
+        SELECT COUNT(*) AS total
+        FROM customer_transaction_master
+        WHERE income_type_id = 36
+        AND UPPER(customer_id) = '$userId'
+        AND vc_date BETWEEN '{$from} 00:00:00' AND '{$to} 23:59:59'
+    ";
+    $config['total_rows'] = $this->db->query($count_sql)->row()->total;
+    $this->pagination->initialize($config);
+
+    // Data
+    $sql = "
+        SELECT 
+            ct.credit,
+            ct.vc_date,
+            it.income_name,
+            ct.remarks AS member_id,
+            u.name AS member_name,
+            u.mobile AS member_mobile
+        FROM customer_transaction_master ct
+        JOIN income_type_master it ON it.income_type_id = ct.income_type_id
+        LEFT JOIN customer_master u ON u.customer_id = ct.remarks
+        WHERE ct.income_type_id = 36
+        AND UPPER(ct.customer_id) = '$userId'
+        AND ct.vc_date BETWEEN '{$from} 00:00:00' AND '{$to} 23:59:59'
+        ORDER BY ct.id DESC
+        LIMIT {$config['per_page']} OFFSET {$page}
+    ";
+
+    $data['income_list'] = $this->db->query($sql)->result_array();
+    $data['pagination']  = $this->pagination->create_links();
+    $data['from'] = $from;
+    $data['to']   = $to;
+
+    $this->load->view('user/layouts/header');
+    $this->load->view('user/layouts/bar');
+    $this->load->view('user/layouts/sub-header');
+    $this->load->view('user/layouts/nav');
+    $this->load->view('report/sponsor_income', $data);
+    $this->load->view('user/layouts/footer');
+}
+
+public function incentive_income_statement()
+{
+    $userId = strtoupper($this->session->userdata('aiplUserId'));
+
+    $from = $this->input->post('from') ?: date("Y-m-01");
+    $to   = $this->input->post('to')   ?: date("Y-m-d");
+
+    $this->load->library('pagination');
+    $config['base_url'] = base_url('report/incentives');
+    $config['per_page'] = 20;
+    $page = ($this->uri->segment(3)) ?: 0;
+
+    $count_sql = "
+        SELECT COUNT(*) AS total
+        FROM customer_transaction_master
+        WHERE income_type_id = 31
+        AND UPPER(customer_id) = '$userId'
+        AND vc_date BETWEEN '{$from} 00:00:00' AND '{$to} 23:59:59'
+    ";
+    $config['total_rows'] = $this->db->query($count_sql)->row()->total;
+    $this->pagination->initialize($config);
+
+    $sql = "
+        SELECT 
+            ct.credit,
+            ct.vc_date,
+            it.income_name,
+            ct.remarks
+        FROM customer_transaction_master ct
+        JOIN income_type_master it ON it.income_type_id = ct.income_type_id
+        WHERE ct.income_type_id = 31
+        AND UPPER(ct.customer_id) = '$userId'
+        AND ct.vc_date BETWEEN '{$from} 00:00:00' AND '{$to} 23:59:59'
+        ORDER BY ct.id DESC
+        LIMIT {$config['per_page']} OFFSET {$page}
+    ";
+
+    $data['income_list'] = $this->db->query($sql)->result_array();
+    $data['pagination'] = $this->pagination->create_links();
+    $data['from'] = $from;
+    $data['to']   = $to;
+
+    $this->load->view('user/layouts/header');
+    $this->load->view('user/layouts/bar');
+    $this->load->view('user/layouts/sub-header');
+    $this->load->view('user/layouts/nav');
+    $this->load->view('report/incentives', $data);
+    $this->load->view('user/layouts/footer');
+}
+
+public function qr_benefit_income_statement()
+{
+    $userId = strtoupper($this->session->userdata('aiplUserId'));
+
+    $from = $this->input->post('from') ?: date("Y-m-01");
+    $to   = $this->input->post('to')   ?: date("Y-m-d");
+
+    $this->load->library('pagination');
+    $config['base_url'] = base_url('report/qr_benefit_income_statement');
+    $config['per_page'] = 20;
+    $page = ($this->uri->segment(3)) ?: 0;
+
+    $count_sql = "
+        SELECT COUNT(*) AS total
+        FROM customer_transaction_master
+        WHERE income_type_id = 32
+        AND UPPER(customer_id) = '$userId'
+        AND vc_date BETWEEN '{$from} 00:00:00' AND '{$to} 23:59:59'
+    ";
+    $config['total_rows'] = $this->db->query($count_sql)->row()->total;
+    $this->pagination->initialize($config);
+
+    $sql = "
+        SELECT 
+            ct.credit,
+            ct.vc_date,
+            it.income_name,
+            ct.remarks
+        FROM customer_transaction_master ct
+        JOIN income_type_master it ON it.income_type_id = ct.income_type_id
+        WHERE ct.income_type_id = 32
+        AND UPPER(ct.customer_id) = '$userId'
+        AND ct.vc_date BETWEEN '{$from} 00:00:00' AND '{$to} 23:59:59'
+        ORDER BY ct.id DESC
+        LIMIT {$config['per_page']} OFFSET {$page}
+    ";
+
+    $data['income_list'] = $this->db->query($sql)->result_array();
+    $data['pagination'] = $this->pagination->create_links();
+    $data['from'] = $from;
+    $data['to']   = $to;
+
+    $this->load->view('user/layouts/header');
+    $this->load->view('user/layouts/bar');
+    $this->load->view('user/layouts/sub-header');
+    $this->load->view('user/layouts/nav');
+    $this->load->view('report/qr_benefit', $data);
+    $this->load->view('user/layouts/footer');
+}
+
+
+
+
+
+
 	public function outofstock()
     {
         $page_name="Out of Stock";

@@ -137,6 +137,8 @@
    
     transfer=function()
     {   
+        //alert("Activation wallet cannot be transferred or withdrawn. It is only for repurchase or reactivation.");
+        //return;
        
         if($("#amount").val=="") { alert("Please enter valid amount.") ; return; }
         if(!confirm("Are you sure to transfer amount now?")) return ;
